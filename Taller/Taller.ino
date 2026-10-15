@@ -25,9 +25,9 @@ const char* TOPIC_LUZ = "clima/esp32/luz";
 // CONFIGURACIÓN DE SENSORES
 // ======================================================
 
-#define DHT_PIN 4        // DATA del DHT11
+#define DHT_PIN 4        
 #define DHT_TYPE DHT11
-#define LDR_PIN 32       // Punto medio del divisor LDR + 10k
+#define LDR_PIN 32       
 
 DHT dht(DHT_PIN, DHT_TYPE);
 
