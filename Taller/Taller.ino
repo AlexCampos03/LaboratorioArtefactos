@@ -25,9 +25,9 @@ const char* TOPIC_LUZ = "clima/esp32/luz";
 // CONFIGURACIÓN DE SENSORES
 // ======================================================
 
-#define DHT_PIN 4        // DATA del DHT11
+#define DHT_PIN 4        
 #define DHT_TYPE DHT11
-#define LDR_PIN 32       // Punto medio del divisor LDR + 10k
+#define LDR_PIN 32       
 
 DHT dht(DHT_PIN, DHT_TYPE);
 
@@ -91,23 +91,18 @@ void conectarMQTT() {
 
 void publicarSensores() {
 
-  // 1 y 2. Obtener temperatura y humedad del DHT11.
   float temperatura = dht.readTemperature();
   float humedad = dht.readHumidity();
 
-  // Si la lectura falla, no publicar datos inválidos.
   if (isnan(temperatura) || isnan(humedad)) {
     Serial.println("Error leyendo el DHT11");
     return;
   }
 
-  // 3. Leer la LDR (ADC de 12 bits: 0 a 4095)
-  //    y convertirla a porcentaje (0 a 100 %).
   int ldrAdc = analogRead(LDR_PIN);
   int luz = map(ldrAdc, 0, 4095, 0, 100);
   luz = constrain(luz, 0, 100);
 
-  // 4. MQTT envía texto, así que se convierten los números a cadenas.
   char tempStr[10];
   char humStr[10];
   char luzStr[10];
@@ -116,14 +111,10 @@ void publicarSensores() {
   dtostrf(humedad, 1, 2, humStr);
   snprintf(luzStr, sizeof(luzStr), "%d", luz);
 
-  // 5. Publicar cada dato en su topic.
-  //    true = mensaje retained: el broker guarda el último valor
-  //    y lo entrega al dashboard apenas se conecta o recarga.
   mqttClient.publish(TOPIC_TEMPERATURA, tempStr, true);
   mqttClient.publish(TOPIC_HUMEDAD, humStr, true);
   mqttClient.publish(TOPIC_LUZ, luzStr, true);
 
-  // 6. Mostrar las mediciones en el Monitor Serial.
   Serial.print("Temperatura: ");
   Serial.print(tempStr);
   Serial.println(" °C");
@@ -145,10 +136,9 @@ void setup() {
 
   Serial.begin(115200);
 
-  // Inicializar sensores y pines.
   dht.begin();
   pinMode(LDR_PIN, INPUT);
-  analogReadResolution(12);   // Lecturas de 0 a 4095
+  analogReadResolution(12);  
 
   conectarWiFi();
 
@@ -160,19 +150,18 @@ void setup() {
 
 void loop() {
 
-  // Si se pierde WiFi, volver a conectarse.
+
   if (WiFi.status() != WL_CONNECTED) {
     conectarWiFi();
   }
 
-  // Si se pierde MQTT, volver a conectarse.
+
   if (!mqttClient.connected()) {
     conectarMQTT();
   }
 
   mqttClient.loop();
 
-  // Publicar sensores cada 2 segundos.
   if (millis() - ultimoEnvio >= INTERVALO_ENVIO) {
 
     ultimoEnvio = millis();
